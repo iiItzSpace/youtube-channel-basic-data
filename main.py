@@ -9,6 +9,7 @@ else:
     import termios
 
 from fetch_data import get_channel_data
+from display_data import display_channel_data
 
 
 def clear_input_buffer() -> None:
@@ -41,7 +42,7 @@ def main() -> int:
         channel_data = get_channel_data(handle)
 
         if channel_data:
-            print("Channel exists.")
+            display_channel_data(channel_data)
         else:
             print("Channel not found or an error occurred.")
 
