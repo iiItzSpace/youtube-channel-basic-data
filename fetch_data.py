@@ -2,6 +2,7 @@
 
 import os
 from typing import Any
+from datetime import datetime
 
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
@@ -44,7 +45,12 @@ def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
     country = snippet.get("country", "N/A")
 
     published_at = snippet.get("publishedAt", "")
-    date_joined = published_at[:10] if published_at else "N/A"
+
+    if published_at:
+        date_obj = datetime.strptime(published_at[:10], "%Y-%m-%d")
+        date_joined = date_obj.strftime("%d-%m-%Y")
+    else:
+        date_joined = "N/A"
 
     return {
         "name": name,
@@ -53,8 +59,7 @@ def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
         "views": views,
         "videos": videos,
         "country": country,
-        "published_at": published_at,
-        "date_joined": date_joined,
+        "published_at": date_joined,
     }
 
 
