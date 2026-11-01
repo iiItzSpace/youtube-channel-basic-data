@@ -1,6 +1,7 @@
 """Fetch and process required YouTube channel data."""
 
 import os
+from datetime import datetime
 from typing import Any
 
 from dotenv import load_dotenv
@@ -20,8 +21,8 @@ def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
 
     Returns:
         A dictionary with the cleaned channel data, including name,
-        link, subscribers, views, videos, country, published_at, and
-        date_joined.
+        link, subscribers, views, videos, country, and published_at
+        (formatted as DD/MM/YYYY).
     """
     snippet = raw_item.get("snippet", {})
     statistics = raw_item.get("statistics", {})
@@ -44,7 +45,12 @@ def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
     country = snippet.get("country", "N/A")
 
     published_at = snippet.get("publishedAt", "")
-    date_joined = published_at[:10] if published_at else "N/A"
+
+    if published_at:
+        date_obj = datetime.strptime(published_at[:10], "%Y-%m-%d")
+        date_joined = date_obj.strftime("%d-%m-%Y")
+    else:
+        date_joined = "N/A"
 
     return {
         "name": name,
@@ -53,8 +59,7 @@ def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
         "views": views,
         "videos": videos,
         "country": country,
-        "published_at": published_at,
-        "date_joined": date_joined,
+        "published_at": date_joined,
     }
 
 

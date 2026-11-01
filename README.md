@@ -7,17 +7,17 @@ data of any YouTube channel using the official YouTube public API.
 
 ## Features 🛠️
 
-### Current Capabilities:
+### Current Capabilities
 
 - [x] Interactive CLI loop with cross-OS input buffer flushing (Windows, macOS, Linux)
 - [x] Real-time channel existence verification by `@handle`
 - [x] Robust error handling for network and API exceptions
+- [x] Channel's name & direct link resolution
+- [x] Formatted metrics display (comma-separated subscribers, views, and videos)
+- [x] Formatted creation date (DD-MM-YYYY) & location
 
 ### Planned Data Extraction (Upcoming):
 
-- [ ] Channel's name & link
-- [ ] Total subscribers, views, and videos
-- [ ] Date joined & location
 - [ ] Latest video title & link
 
 ## Requirements ❗
@@ -71,5 +71,5 @@ python main.py
 
 ## Project Status ⚙️️
 
-In progress ⏳ — Core API connection and CLI validation loop are complete. 
-Data parsing and visual formatting are next.
+In progress ⏳ — Core API connection, data parsing, and visual CLI formatting
+are complete. Next step: fetching the latest video data.
