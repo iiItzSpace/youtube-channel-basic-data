@@ -1,8 +1,8 @@
 """Fetch and process required YouTube channel data."""
 
 import os
-from typing import Any
 from datetime import datetime
+from typing import Any
 
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
@@ -21,8 +21,8 @@ def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
 
     Returns:
         A dictionary with the cleaned channel data, including name,
-        link, subscribers, views, videos, country, published_at, and
-        date_joined.
+        link, subscribers, views, videos, country, and published_at
+        (formatted as DD/MM/YYYY).
     """
     snippet = raw_item.get("snippet", {})
     statistics = raw_item.get("statistics", {})

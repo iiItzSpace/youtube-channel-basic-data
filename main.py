@@ -8,8 +8,8 @@ if os.name == "nt":
 else:
     import termios
 
-from fetch_data import get_channel_data
 from display_data import display_channel_data
+from fetch_data import get_channel_data
 
 
 def clear_input_buffer() -> None:
@@ -25,9 +25,10 @@ def clear_input_buffer() -> None:
 
 
 def main() -> int:
-    """Run the main interactive CLI loop to fetch channel data or exit.
+    """Run the main interactive CLI loop to fetch and display the channel data.
 
-    For now, just search channel and check if exists.
+    Returns:
+        The exit code (0 when the user exits successfully).
     """
     print("=== YouTube Channel Data ===")
 
@@ -61,6 +62,7 @@ def main() -> int:
             print()
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
