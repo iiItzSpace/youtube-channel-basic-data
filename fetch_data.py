@@ -1,4 +1,4 @@
-"""Fetch and process required YouTube channel data."""
+"""Fetch and process required YouTube channel data using OOP."""
 
 import os
 from datetime import datetime
@@ -12,86 +12,106 @@ load_dotenv()
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 
-def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
-    """Extract and format channel metrics from YouTube API response.
+class YoutubeDataFetcher:
+    """Handles fetching and parsing YouTube channel data."""
 
-    Args:
-        raw_item: A dictionary containing the raw channel data
-            ('snippet' and 'statistics').
+    def __init__(self) -> None:
+        """Initialize the YouTube API client using the environment API key."""
+        self.api_key = YOUTUBE_API_KEY
+        self.youtube: Any = None
 
-    Returns:
-        A dictionary with the cleaned channel data, including name,
-        link, subscribers, views, videos, country, and published_at
-        (formatted as DD/MM/YYYY).
-    """
-    snippet = raw_item.get("snippet", {})
-    statistics = raw_item.get("statistics", {})
+        if self.api_key:
+            self.youtube = build("youtube", "v3",developerKey=self.api_key)
 
-    channel_id = raw_item.get("id", "")
-    custom_url = snippet.get("customUrl", "")
+    def _has_api_client(self) -> bool:
+        """Check if the API client is initialized.
 
-    if custom_url:
-        link = f"https://www.youtube.com/{custom_url}"
-    elif channel_id:
-        link = f"https://www.youtube.com/channel/{channel_id}"
-    else:
-        link = "N/A"
+        Returns:
+            True if the API client is initialized, else False.
+        """
+        if not self.youtube:
+            print("Error: The YouTube API key was not found in .env file.")
+            return False
+        return True
 
-    subscribers = statistics.get("subscriberCount", "N/A")
-    views = statistics.get("viewCount", "N/A")
-    videos = statistics.get("videoCount", "N/A")
+    @staticmethod
+    def parse_channel_data(raw_item: dict[str, Any]) -> dict[str, str]:
+        """Extract and format channel metrics from YouTube API response.
 
-    name = snippet.get("title", "N/A")
-    country = snippet.get("country", "N/A")
+        Args:
+            raw_item: A dictionary containing the raw channel data
+                ('snippet' and 'statistics').
 
-    published_at = snippet.get("publishedAt", "")
+        Returns:
+            A dictionary with the cleaned channel data, including name,
+            link, subscribers, views, videos, country, and published_at
+            (formatted as DD/MM/YYYY).
+        """
+        snippet = raw_item.get("snippet", {})
+        statistics = raw_item.get("statistics", {})
 
-    if published_at:
-        date_obj = datetime.strptime(published_at[:10], "%Y-%m-%d")
-        date_joined = date_obj.strftime("%d-%m-%Y")
-    else:
-        date_joined = "N/A"
+        channel_id = raw_item.get("id", "")
+        custom_url = snippet.get("customUrl", "")
 
-    return {
-        "name": name,
-        "link": link,
-        "subscribers": subscribers,
-        "views": views,
-        "videos": videos,
-        "country": country,
-        "published_at": date_joined,
-    }
+        if custom_url:
+            link = f"https://www.youtube.com/{custom_url}"
+        elif channel_id:
+            link = f"https://www.youtube.com/channel/{channel_id}"
+        else:
+            link = "N/A"
 
+        subscribers = statistics.get("subscriberCount", "N/A")
+        views = statistics.get("viewCount", "N/A")
+        videos = statistics.get("videoCount", "N/A")
 
-def get_channel_data(handle: str) -> dict[str, str] | None:
-    """Fetch and parse channel data from the YouTube API by handle.
+        name = snippet.get("title", "N/A")
+        country = snippet.get("country", "N/A")
 
-    Args:
-        handle: The YouTube channel handle (with or without '@').
+        published_at = snippet.get("publishedAt", "")
 
-    Returns:
-        A dictionary with the parsed channel data if found, or None if
-        the channel does not exist or an API error occurs.
-    """
-    if not YOUTUBE_API_KEY:
-        print("Error: The YouTube API key was not found in .env file.")
-        return None
+        if published_at:
+            date_obj = datetime.strptime(published_at[:10], "%Y-%m-%d")
+            date_joined = date_obj.strftime("%d-%m-%Y")
+        else:
+            date_joined = "N/A"
 
-    formatted_handle = handle if handle.startswith("@") else f"@{handle}"
+        return {
+            "name": name,
+            "link": link,
+            "subscribers": subscribers,
+            "views": views,
+            "videos": videos,
+            "country": country,
+            "published_at": date_joined,
+        }
 
-    try:
-        youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
-        request = youtube.channels().list(
-            part="snippet,statistics",
-            forHandle=formatted_handle,
-        )
-        response = request.execute()
-    except HttpError as error:
-        print(f"\nAPI Error [{error.resp.status}]: {error.reason}")
-        return None
+    def get_channel_data(self, handle: str) -> dict[str, str] | None:
+        """Fetch and parse channel data from the YouTube API by handle.
 
-    items = response.get("items", [])
-    if not items:
-        return None
+        Args:
+            handle: The YouTube channel handle (with or without '@').
 
-    return parse_channel_data(items[0])
+        Returns:
+            A dictionary with the parsed channel data if found, or None if
+            the channel does not exist or an API error occurs.
+        """
+        if not self._has_api_client():
+            return None
+
+        formatted_handle = handle if handle.startswith("@") else f"@{handle}"
+
+        try:
+            request = self.youtube.channels().list(
+                part="snippet,statistics",
+                forHandle=formatted_handle,
+            )
+            response = request.execute()
+        except HttpError as error:
+            print(f"\nAPI Error [{error.resp.status}]: {error.reason}")
+            return None
+
+        items = response.get("items", [])
+        if not items:
+            return None
+
+        return self.parse_channel_data(items[0])
