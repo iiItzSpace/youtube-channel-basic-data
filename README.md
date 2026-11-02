@@ -3,7 +3,8 @@
 A Python command-line interface (CLI) tool that fetches and displays real-time
 data of any YouTube channel using the official YouTube public API.
 
-*An image will be added soon when the CLI is completed.*
+![img_1.png](img_1.png)
+![img_2.png](img_2.png)
 
 ## Features 🛠️
 
@@ -15,10 +16,7 @@ data of any YouTube channel using the official YouTube public API.
 - [x] Channel's name & direct link resolution
 - [x] Formatted metrics display (comma-separated subscribers, views, and videos)
 - [x] Formatted creation date (DD-MM-YYYY) & location
-
-### Planned Data Extraction (Upcoming):
-
-- [ ] Latest video title & link
+- [x] Automatic extraction of the most recent video's title and direct watch link
 
 ## Requirements ❗
 
@@ -71,5 +69,4 @@ python main.py
 
 ## Project Status ⚙️️
 
-In progress ⏳ — Core API connection, data parsing, and visual CLI formatting
-are complete. Next step: fetching the latest video data.
+Completed ✅

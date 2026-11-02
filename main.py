@@ -1,15 +1,15 @@
 """CLI entry point to fetch YouTube channel basic data."""
 
-import os
+import io
 import sys
 
-if os.name == "nt":
+if sys.platform == "win32":
     import msvcrt
 else:
     import termios
 
 from display_data import display_channel_data
-from fetch_data import get_channel_data
+from fetch_data import YoutubeDataFetcher
 
 
 def clear_input_buffer() -> None:
@@ -17,7 +17,7 @@ def clear_input_buffer() -> None:
 
     This prevents inputs from being read during network requests.
     """
-    if os.name == "nt":
+    if sys.platform == "win32":
         while msvcrt.kbhit():
             msvcrt.getch()
     else:
@@ -25,12 +25,17 @@ def clear_input_buffer() -> None:
 
 
 def main() -> int:
-    """Run the main interactive CLI loop to fetch and display the channel data.
+    """Run the interactive CLI loop to fetch and display channel data.
 
     Returns:
         The exit code (0 when the user exits successfully).
     """
+    if sys.platform == "win32" and isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     print("=== YouTube Channel Data ===")
+
+    fetcher = YoutubeDataFetcher()
 
     while True:
         print()
@@ -40,7 +45,7 @@ def main() -> int:
             continue
 
         print("Processing")
-        channel_data = get_channel_data(handle)
+        channel_data = fetcher.get_channel_data(handle)
 
         if channel_data:
             display_channel_data(channel_data)

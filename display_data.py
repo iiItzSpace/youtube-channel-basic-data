@@ -15,3 +15,5 @@ def display_channel_data(channel_data: dict[str, str]) -> None:
     print(f"Total videos amount: {int(channel_data['videos']):,}")
     print(f"Country: {channel_data['country']}")
     print(f"Date joined: {channel_data['published_at']}")
+    print(f"Latest video title: {channel_data['latest_video_title']}")
+    print(f"View latest video here: {channel_data['latest_video_link']}")
