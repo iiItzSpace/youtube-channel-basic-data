@@ -13,15 +13,15 @@ YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 
 class YoutubeDataFetcher:
-    """Handles fetching and parsing YouTube channel data."""
+    """Handle fetching and parsing YouTube channel data."""
 
     def __init__(self) -> None:
-        """Initialize the YouTube API client using the environment API key."""
+        """Initialize the YouTube API client."""
         self.api_key = YOUTUBE_API_KEY
         self.youtube: Any = None
 
         if self.api_key:
-            self.youtube = build("youtube", "v3",developerKey=self.api_key)
+            self.youtube = build("youtube", "v3", developerKey=self.api_key)
 
     def _has_api_client(self) -> bool:
         """Check if the API client is initialized.
@@ -85,6 +85,42 @@ class YoutubeDataFetcher:
             "published_at": date_joined,
         }
 
+    def get_latest_video(self, uploads_playlist_id: str) -> dict[str, str]:
+        """Fetch the latest uploaded video title and its link.
+
+        Args:
+            uploads_playlist_id: The ID of the channel's uploads playlist.
+
+        Returns:
+              A dictionary with the latest video's title and its link.
+        """
+        if not uploads_playlist_id:
+            return {"latest_video_title": "N/A", "latest_video_link": "N/A"}
+
+        try:
+            request = self.youtube.playlistItems().list(
+                part="snippet",
+                playlistId=uploads_playlist_id,
+                maxResults=1,
+            )
+            response = request.execute()
+        except HttpError:
+            return {"latest_video_title": "N/A", "latest_video_link": "N/A"}
+
+        items = response.get("items", [])
+        if not items:
+            return {"latest_video_title": "N/A", "latest_video_link": "N/A"}
+
+        snippet = items[0].get("snippet", {})
+        title = snippet.get("title", "N/A")
+        video_id = snippet.get("resourceId", {}).get("videoId", "")
+
+        link = "N/A"
+        if video_id:
+            link = f"https://www.youtube.com/watch?v={video_id}"
+
+        return {"latest_video_title": title, "latest_video_link": link}
+
     def get_channel_data(self, handle: str) -> dict[str, str] | None:
         """Fetch and parse channel data from the YouTube API by handle.
 
@@ -102,7 +138,7 @@ class YoutubeDataFetcher:
 
         try:
             request = self.youtube.channels().list(
-                part="snippet,statistics",
+                part="snippet,statistics,contentDetails",
                 forHandle=formatted_handle,
             )
             response = request.execute()
@@ -114,4 +150,17 @@ class YoutubeDataFetcher:
         if not items:
             return None
 
-        return self.parse_channel_data(items[0])
+        channel_item = items[0]
+
+        uploads_playlist_id = (
+            channel_item.get("contentDetails", {})
+            .get("relatedPlaylists", {})
+            .get("uploads")
+        )
+
+        parsed_data = self.parse_channel_data(channel_item)
+        latest_video = self.get_latest_video(uploads_playlist_id)
+
+        parsed_data.update(latest_video)
+
+        return parsed_data
